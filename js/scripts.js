@@ -37,6 +37,7 @@ var step = function() {
     for (i = 0; i < monsters.length; i++) {
       monsters[i].monsterMove();
     };
+    // -- Spawn new monsters at set intervals -- //
   } else if (time % 400 === 0) {
     var newMonster = new Sprite(600, 600, 35, "brown");
     monsters.push(newMonster);
@@ -50,7 +51,6 @@ var update = function() {
   for (i = 0; i < monsters.length; i++) {
     monsters[i].update();
   };
-
 };
 
 // -- place items that need to be drawn in here. static lines, text, images and objects -- //
