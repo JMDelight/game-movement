@@ -1,0 +1,21 @@
+.checkbox {
+  padding: 10px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+#show-pizza {
+  display: none;
+}
+
+.pizza-display {
+  padding-top: 20px;
+  cursor: pointer;
+  color: #0044ee;
+}
+
+.pizza-display:hover {
+  text-decoration: underline;
+}
