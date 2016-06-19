@@ -52,6 +52,7 @@ var update = function() {
     monsters[i].update();
   };
   collisionCheck(player, monsters);
+  monsterBump(monsters);
 };
 
 // -- place items that need to be drawn in here. static lines, text, images and objects -- //
@@ -69,6 +70,29 @@ var draw = function() {
 // -- A function to calculate the total distance between the centers of two sprites -- //
 var calculateDistance = function(spriteOne, spriteTwo) {
   return Math.sqrt(Math.pow((spriteOne.xPos - spriteTwo.xPos), 2) + Math.pow((spriteOne.yPos - spriteTwo.yPos), 2));
+};
+
+var monsterBump = function(monsterArray) {
+  for (i = 0; i < monsterArray.length; i++) {
+    for (index = 0; index < monsterArray.length; index++) {
+      if (i != index && calculateDistance(monsterArray[index], monsterArray[i]) <= monsterArray[i].radius + monsterArray[index].radius) {
+        console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
+        console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
+        monsterArray[i].xVel *= -1;
+        monsterArray[i].yVel *= -1;
+        monsterArray[index].xVel *= -1;
+        monsterArray[index].yVel *= -1;
+        // while (calculateDistance(monsterArray[i], monsterArray[index]) <= monsterArray[i].radius + monsterArray[index].radius) {
+          monsterArray[i].xPos += monsterArray[i].xVel;
+          monsterArray[i].yPos += monsterArray[i].yVel;
+          monsterArray[index].xPos += monsterArray[index].xVel;
+          monsterArray[index].yPos += monsterArray[index].yVel;
+        // };
+        console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
+        console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
+      }
+    };
+  };
 };
 
 var collisionCheck = function(sprite, monsterArray) {
@@ -103,12 +127,12 @@ Sprite.prototype.update = function() {
   this.yPos += this.yVel;
   if (this.yPos + this.radius >= height) {
       this.yVel *= -1;
-    } else if (this.yPos - this.radius<= 0) {
+    } else if (this.yPos - this.radius <= 0) {
       this.yVel *= -1;
     }
   if (this.xPos + this.radius >= width) {
       this.xVel *= -1;
-    } else if (this.xPos - this.radius<= 0) {
+    } else if (this.xPos - this.radius <= 0) {
       this.xVel *= -1;
     }
 };
@@ -132,7 +156,7 @@ Sprite.prototype.monsterMove = function() {
     this.xVel = 0;
     this.yVel = 0;
   } else {
-    console.log(randomNumber)
+
   }
 };
 
