@@ -1,4 +1,4 @@
-# _Pizza Page_
+# _Movement Prototype_
 
 #### _A webpage for movement and collisions in a 2d canvas, 6/17/2016_
 

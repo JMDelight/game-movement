@@ -7,8 +7,8 @@ var animate = window.requestAnimationFrame ||
 
 // -- Initialize Global Variables -- //
 var canvas = document.createElement('canvas');
-var width = 1200;
-var height = 1200;
+var width = 800;
+var height = 800;
 var playerSpeed = 4;
 
 canvas.width = width;
@@ -23,8 +23,8 @@ var monster1 = new Sprite(300, 300, 20);
 var monster2 = new Sprite(500, 200, 30, "orange");
 var monster3 = new Sprite(700, 600, 20);
 var monster4 = new Sprite(500, 500, 30, "pink");
-var monster5 = new Sprite(400, 800, 20);
-var monster6 = new Sprite(800, 200, 30, "purple");
+var monster5 = new Sprite(400, 700, 20);
+var monster6 = new Sprite(700, 200, 30, "purple");
 monsters.push(monster1, monster2, monster3, monster4, monster5, monster6);
 
 // -- place each function in here that runs on each animation step -- //
@@ -51,6 +51,7 @@ var update = function() {
   for (i = 0; i < monsters.length; i++) {
     monsters[i].update();
   };
+  collisionCheck(player, monsters);
 };
 
 // -- place items that need to be drawn in here. static lines, text, images and objects -- //
@@ -62,6 +63,19 @@ var draw = function() {
   player.draw();
   for (i = 0; i < monsters.length; i++) {
     monsters[i].draw();
+  };
+};
+
+// -- A function to calculate the total distance between the centers of two sprites -- //
+var calculateDistance = function(spriteOne, spriteTwo) {
+  return Math.sqrt(Math.pow((spriteOne.xPos - spriteTwo.xPos), 2) + Math.pow((spriteOne.yPos - spriteTwo.yPos), 2));
+};
+
+var collisionCheck = function(sprite, monsterArray) {
+  for (i = 0; i < monsterArray.length; i++) {
+    if (calculateDistance(monsterArray[i], sprite) <= (monsterArray[i].radius + sprite.radius)) {
+      monsterArray[i].ballColor = "#FF3D0D";
+    }
   };
 };
 
