@@ -17,6 +17,8 @@ var context = canvas.getContext('2d');
 
 // -- Initialize an empty array
 var monsters = [];
+// -- depressedKeys initialized as an empty set to allow for a different set up for movement keys. -- //
+var depressedKeys = [];
 var time = 0;
 var player = new Sprite(100, 100, 20, "blue");
 var monster1 = new Sprite(300, 300, 20);
@@ -76,20 +78,18 @@ var monsterBump = function(monsterArray) {
   for (i = 0; i < monsterArray.length; i++) {
     for (index = 0; index < monsterArray.length; index++) {
       if (i != index && calculateDistance(monsterArray[index], monsterArray[i]) <= monsterArray[i].radius + monsterArray[index].radius) {
-        console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
-        console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
+        // console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
+        // console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
         monsterArray[i].xVel *= -1;
         monsterArray[i].yVel *= -1;
         monsterArray[index].xVel *= -1;
         monsterArray[index].yVel *= -1;
-        // while (calculateDistance(monsterArray[i], monsterArray[index]) <= monsterArray[i].radius + monsterArray[index].radius) {
-          monsterArray[i].xPos += monsterArray[i].xVel;
-          monsterArray[i].yPos += monsterArray[i].yVel;
-          monsterArray[index].xPos += monsterArray[index].xVel;
-          monsterArray[index].yPos += monsterArray[index].yVel;
-        // };
-        console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
-        console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
+        monsterArray[i].xPos += monsterArray[i].xVel;
+        monsterArray[i].yPos += monsterArray[i].yVel;
+        monsterArray[index].xPos += monsterArray[index].xVel;
+        monsterArray[index].yPos += monsterArray[index].yVel;
+        // console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
+        // console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
       }
     };
   };
@@ -167,36 +167,101 @@ window.onload = function() {
   animate(step);
 };
 
+// -- Original movement idea is contained in the next 30 lines. -- //
+// window.addEventListener("keydown", function(event) {
+// // -- Event listener for up and down key. -- //
+//   if (event.keyCode === 38) {
+//     player.yVel = -playerSpeed;
+//   } else if (event.keyCode === 40) {
+//     player.yVel = playerSpeed;
+//   }
+//   if (event.keyCode === 37) {
+//     // -- Event listener for left and rigth key. -- //
+//     player.xVel = -playerSpeed;
+//   } else if (event.keyCode === 39) {
+//     player.xVel = playerSpeed;
+//   }
+//   console.log(event.keyCode);
+//   console.log("time = " + time);
+// });
+// // -- keyup press is designed to stop movement if the key for the direction you are moving is released. We can adjust that behavior towards whatever we want. -- //
+// window.addEventListener("keyup", function (event) {
+//   if (event.keyCode === 39 && player.xVel === playerSpeed) {
+//     player.xVel = 0;
+//   } else if (event.keyCode === 37 && player.xVel === -playerSpeed) {
+//     player.xVel = 0;
+//   }
+//   if (event.keyCode === 38 && player.yVel === -playerSpeed) {
+//     player.yVel = 0;
+//   } else if (event.keyCode === 40 && player.yVel === playerSpeed) {
+//     player.yVel = 0;
+//   }
+// });
+
+
+// -- Optional movement key code to work better while pushing opposite directions -- //
 window.addEventListener("keydown", function(event) {
 // -- Event listener for up and down key. -- //
   if (event.keyCode === 38) {
     player.yVel = -playerSpeed;
+    if (!depressedKeys.includes(38)) {
+      depressedKeys.push(38);
+    }
   } else if (event.keyCode === 40) {
     player.yVel = playerSpeed;
+    if (!depressedKeys.includes(40)) {
+      depressedKeys.push(40);
+    }
   }
   if (event.keyCode === 37) {
     // -- Event listener for left and rigth key. -- //
     player.xVel = -playerSpeed;
+    if (!depressedKeys.includes(37)) {
+      depressedKeys.push(37);
+    }
   } else if (event.keyCode === 39) {
     player.xVel = playerSpeed;
+    if (!depressedKeys.includes(39)) {
+      depressedKeys.push(39);
+    }
   }
-  console.log(event.keyCode);
-  console.log("time = " + time);
+  console.log("At end of keydown:" + depressedKeys);
+  // console.log(event.keyCode);
+  // console.log("time = " + time);
 });
 // -- keyup press is designed to stop movement if the key for the direction you are moving is released. We can adjust that behavior towards whatever we want. -- //
 window.addEventListener("keyup", function (event) {
   if (event.keyCode === 39 && player.xVel === playerSpeed) {
+    if (depressedKeys.includes(37)) {
+      player.xVel = -playerSpeed;
+    } else {
     player.xVel = 0;
+  }
   } else if (event.keyCode === 37 && player.xVel === -playerSpeed) {
-    player.xVel = 0;
+    if (depressedKeys.includes(39)) {
+      player.xVel = playerSpeed;
+    } else {
+      player.xVel = 0;
+    }
   }
   if (event.keyCode === 38 && player.yVel === -playerSpeed) {
-    player.yVel = 0;
+    if (depressedKeys.includes(40)) {
+      player.yVel = playerSpeed;
+    } else {
+      player.yVel = 0;
+    }
   } else if (event.keyCode === 40 && player.yVel === playerSpeed) {
-    player.yVel = 0;
+    if (depressedKeys.includes(38)) {
+      player.yVel = -playerSpeed;
+    } else {
+      player.yVel = 0;
+    }
   }
+  while (depressedKeys.includes(event.keyCode)) {
+    depressedKeys.splice(depressedKeys.indexOf(event.keyCode, 1));
+  };
+  console.log("At end of keyup:" + depressedKeys);
 });
-
 
 // -- this is an example of an object and prototypes that I used for pong. It is left in here as an example of how to construct a basic moving object that reflects off of objects. -- //
 
