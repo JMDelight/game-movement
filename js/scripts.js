@@ -6,28 +6,52 @@ var animate = window.requestAnimationFrame ||
   };
 
 // -- Initialize Global Variables -- //
-var canvas = document.createElement('canvas');
-var width = 800;
-var height = 800;
+var width = 750;
+var height = 750;
 var playerSpeed = 4;
 
+var canvas = document.createElement('canvas');
 canvas.width = width;
 canvas.height = height;
 var context = canvas.getContext('2d');
 
 // -- Initialize an empty array
 var monsters = [];
+var currentLightPuzzle = [];
 // -- depressedKeys initialized as an empty set to allow for a different set up for movement keys. -- //
 var depressedKeys = [];
 var time = 0;
 var player = new Sprite(100, 100, 20, "blue");
-var monster1 = new Sprite(300, 300, 20);
-var monster2 = new Sprite(500, 200, 30, "orange");
-var monster3 = new Sprite(700, 600, 20);
-var monster4 = new Sprite(500, 500, 30, "pink");
-var monster5 = new Sprite(400, 700, 20);
-var monster6 = new Sprite(700, 200, 30, "purple");
-monsters.push(monster1, monster2, monster3, monster4, monster5, monster6);
+
+var lightPanel1 = new Sprite(200, 200, 40);
+var lightPanelObject1 = new LightPuzzle(lightPanel1, 1, 1)
+var lightPanel2 = new Sprite(400, 200, 40);
+var lightPanelObject2 = new LightPuzzle(lightPanel2, 1, 2)
+var lightPanel3 = new Sprite(600, 200, 40);
+var lightPanelObject3 = new LightPuzzle(lightPanel3, 1, 3)
+
+var lightPanel4 = new Sprite(200, 400, 40);
+var lightPanelObject4 = new LightPuzzle(lightPanel4, 2, 1)
+var lightPanel5 = new Sprite(400, 400, 40);
+var lightPanelObject5 = new LightPuzzle(lightPanel5, 2, 2)
+var lightPanel6 = new Sprite(600, 400, 40);
+var lightPanelObject6 = new LightPuzzle(lightPanel6, 2, 3)
+var lightPanel7 = new Sprite(200, 600, 40);
+var lightPanelObject7 = new LightPuzzle(lightPanel7, 3, 1)
+var lightPanel8 = new Sprite(400, 600, 40);
+var lightPanelObject8 = new LightPuzzle(lightPanel8, 3, 2)
+var lightPanel9 = new Sprite(600, 600, 40);
+var lightPanelObject9 = new LightPuzzle(lightPanel9, 3, 3)
+
+currentLightPuzzle.push(lightPanelObject9, lightPanelObject8, lightPanelObject7, lightPanelObject6, lightPanelObject5, lightPanelObject4, lightPanelObject3, lightPanelObject2, lightPanelObject1);
+
+// var monster1 = new Sprite(300, 300, 20);
+// var monster2 = new Sprite(500, 200, 30, "orange");
+// var monster3 = new Sprite(700, 600, 20);
+// var monster4 = new Sprite(500, 500, 30, "pink");
+// var monster5 = new Sprite(400, 700, 20);
+// var monster6 = new Sprite(700, 200, 30, "purple");
+// monsters.push(monster1, monster2, monster3, monster4, monster5, monster6);
 
 // -- place each function in here that runs on each animation step -- //
 var step = function() {
@@ -35,16 +59,36 @@ var step = function() {
   draw();
   animate(step);
   time ++;
+  timerEvents();
+};
+
+var timerEvents = function() {
+  // -- random monster movement timer tick -- //
   if (time % 30 === 0) {
     for (i = 0; i < monsters.length; i++) {
       monsters[i].monsterMove();
     };
     // -- Spawn new monsters at set intervals -- //
   } else if (time % 400 === 0) {
-    var newMonster = new Sprite(600, 600, 35, "brown");
-    monsters.push(newMonster);
+    // var randomColor = "#";
+    // while (randomColor.length <= 6) {
+    //   randomColor += (Math.floor(Math.random() * 9) + 1);
+    // };
+    // var randomXPos = 0;
+    // var randomYPos = 0;
+    // while (randomXPos < 1 || Math.abs(randomXPos - player.xPos) < 100) {
+    //   randomXPos = (Math.floor(Math.random() * width / 2 + width / 4));
+    //   console.log("random x");
+    // };
+    // while (randomYPos < 1 || Math.abs(randomYPos - player.yPos) < 100) {
+    //   randomYPos = (Math.floor(Math.random() * height / 2 + height / 4));
+    //   console.log("random y");
+    // };
+    // var newMonster = new Sprite(randomXPos, randomYPos, 35, randomColor);
+    // monsters.push(newMonster);
   }
 };
+
 
 // -- place update functions in here -- //
 // -- Updates are used to incrementally adjust an objects position and possibly other things.  Called every frame through the step function -- //
@@ -67,7 +111,11 @@ var draw = function() {
   for (i = 0; i < monsters.length; i++) {
     monsters[i].draw();
   };
+  for (i = 0; i < currentLightPuzzle.length; i++) {
+    currentLightPuzzle[i].draw();
+  };
 };
+
 
 // -- A function to calculate the total distance between the centers of two sprites -- //
 var calculateDistance = function(spriteOne, spriteTwo) {
@@ -160,6 +208,34 @@ Sprite.prototype.monsterMove = function() {
   }
 };
 
+// --
+function LightPuzzle(sprite, positionInGridX, positionInGridY, isLit = false) {
+  this.sprite = sprite;
+  // -- adjustments to allow checking neighbors based on numbers -- //
+  this.column = 10 * positionInGridX;
+  this.row = positionInGridY;
+  this.isLit = isLit;
+};
+
+LightPuzzle.prototype.draw = function() {
+  if (this.isLit) {
+    this.sprite.ballColor = "yellow";
+  } else {
+    this.sprite.ballColor = "brown";
+  }
+  this.sprite.draw();
+};
+
+LightPuzzle.prototype.toggleLights = function() {
+  this.isLit = !this.isLit;
+  var workingColumn = this.column;
+  var workingRow = this.row;
+  for( i = 0; i < currentLightPuzzle.length; i ++) {
+      if (Math.abs((workingRow + workingColumn) - (currentLightPuzzle[i].row + currentLightPuzzle[i].column)) === 1 || Math.abs((workingRow + workingColumn) - (currentLightPuzzle[i].row + currentLightPuzzle[i].column)) === 10) {
+        currentLightPuzzle[i].isLit = !currentLightPuzzle[i].isLit;
+      }
+  };
+};
 
 // -- Creates the canvas element on page load and starts animating the canvas -- //
 window.onload = function() {
@@ -207,7 +283,8 @@ window.addEventListener("keydown", function(event) {
     if (!depressedKeys.includes(38)) {
       depressedKeys.push(38);
     }
-  } else if (event.keyCode === 40) {
+  }
+  if (event.keyCode === 40) {
     player.yVel = playerSpeed;
     if (!depressedKeys.includes(40)) {
       depressedKeys.push(40);
@@ -219,7 +296,8 @@ window.addEventListener("keydown", function(event) {
     if (!depressedKeys.includes(37)) {
       depressedKeys.push(37);
     }
-  } else if (event.keyCode === 39) {
+  }
+  if (event.keyCode === 39) {
     player.xVel = playerSpeed;
     if (!depressedKeys.includes(39)) {
       depressedKeys.push(39);
@@ -237,7 +315,8 @@ window.addEventListener("keyup", function (event) {
     } else {
     player.xVel = 0;
   }
-  } else if (event.keyCode === 37 && player.xVel === -playerSpeed) {
+  }
+  if (event.keyCode === 37 && player.xVel === -playerSpeed) {
     if (depressedKeys.includes(39)) {
       player.xVel = playerSpeed;
     } else {
@@ -250,7 +329,8 @@ window.addEventListener("keyup", function (event) {
     } else {
       player.yVel = 0;
     }
-  } else if (event.keyCode === 40 && player.yVel === playerSpeed) {
+  }
+  if (event.keyCode === 40 && player.yVel === playerSpeed) {
     if (depressedKeys.includes(38)) {
       player.yVel = -playerSpeed;
     } else {
