@@ -9,6 +9,8 @@ var animate = window.requestAnimationFrame ||
 var width = 750;
 var height = 750;
 var playerSpeed = 4;
+var wallWidth = 10;
+var doorLength = 40;
 
 var canvas = document.createElement('canvas');
 canvas.width = width;
@@ -17,34 +19,50 @@ var context = canvas.getContext('2d');
 
 // -- Initialize an empty array
 var monsters = [];
-var currentLightPuzzle = [];
+
+// -- Make an empty array of length 4 for the doors index 0 will be the door at the top of the screen.  The next doors go clockwise -- //
+var doors = [];
+doors.length = 4;
+// -- using the sprite object for the doors, radius is going to be the size of the door. We will need a new draw method for doors. -- //
+var doorNorth = new Sprite(width / 2 - doorLength / 2, 0, doorLength, "blue");
+var doorEast = new Sprite(width - wallWidth, height / 2 - doorLength / 2, doorLength, "green");
+var doorSouth = new Sprite(width / 2 - doorLength / 2, height - wallWidth, doorLength, "yellow");
+var doorWest = new Sprite(0, height / 2 - doorLength / 2, doorLength, "red");
+doors[0] = doorNorth;
+doors[1] = doorEast;
+doors[2] = doorSouth;
+doors[3] = doorWest;
 // -- depressedKeys initialized as an empty set to allow for a different set up for movement keys. -- //
 var depressedKeys = [];
 var time = 0;
 var player = new Sprite(100, 100, 20, "blue");
-
+// -- Boolean to stop triggering the light puzzle repeatedly -- //
+var lightPuzzlePlayerBoolean = false;
+// -- gloabal variable to make collisionCheckLightPuzzle work -- //
+var triggeredLight;
+// -- set up the light puzzle -- //
+var currentLightPuzzle = [];
 var lightPanel1 = new Sprite(200, 200, 40);
-var lightPanelObject1 = new LightPuzzle(lightPanel1, 1, 1)
+var lightPanelObject1 = new LightPuzzle(lightPanel1, 1, 1);
 var lightPanel2 = new Sprite(400, 200, 40);
-var lightPanelObject2 = new LightPuzzle(lightPanel2, 1, 2)
+var lightPanelObject2 = new LightPuzzle(lightPanel2, 1, 2);
 var lightPanel3 = new Sprite(600, 200, 40);
-var lightPanelObject3 = new LightPuzzle(lightPanel3, 1, 3)
-
+var lightPanelObject3 = new LightPuzzle(lightPanel3, 1, 3);
 var lightPanel4 = new Sprite(200, 400, 40);
-var lightPanelObject4 = new LightPuzzle(lightPanel4, 2, 1)
+var lightPanelObject4 = new LightPuzzle(lightPanel4, 2, 1);
 var lightPanel5 = new Sprite(400, 400, 40);
-var lightPanelObject5 = new LightPuzzle(lightPanel5, 2, 2)
+var lightPanelObject5 = new LightPuzzle(lightPanel5, 2, 2);
 var lightPanel6 = new Sprite(600, 400, 40);
-var lightPanelObject6 = new LightPuzzle(lightPanel6, 2, 3)
+var lightPanelObject6 = new LightPuzzle(lightPanel6, 2, 3);
 var lightPanel7 = new Sprite(200, 600, 40);
-var lightPanelObject7 = new LightPuzzle(lightPanel7, 3, 1)
+var lightPanelObject7 = new LightPuzzle(lightPanel7, 3, 1);
 var lightPanel8 = new Sprite(400, 600, 40);
-var lightPanelObject8 = new LightPuzzle(lightPanel8, 3, 2)
+var lightPanelObject8 = new LightPuzzle(lightPanel8, 3, 2);
 var lightPanel9 = new Sprite(600, 600, 40);
-var lightPanelObject9 = new LightPuzzle(lightPanel9, 3, 3)
-
+var lightPanelObject9 = new LightPuzzle(lightPanel9, 3, 3);
 currentLightPuzzle.push(lightPanelObject9, lightPanelObject8, lightPanelObject7, lightPanelObject6, lightPanelObject5, lightPanelObject4, lightPanelObject3, lightPanelObject2, lightPanelObject1);
 
+// -- initialize some monsters to start -- //
 // var monster1 = new Sprite(300, 300, 20);
 // var monster2 = new Sprite(500, 200, 30, "orange");
 // var monster3 = new Sprite(700, 600, 20);
@@ -98,6 +116,7 @@ var update = function() {
     monsters[i].update();
   };
   collisionCheck(player, monsters);
+  collisionCheckLightPuzzle(player, currentLightPuzzle);
   monsterBump(monsters);
 };
 
@@ -105,17 +124,28 @@ var update = function() {
 var draw = function() {
   context.fillStyle = "#000";
   context.fillRect(0, 0, width, height);
-  context.strokeStyle = "#fff";
-  context.strokeRect(width/2, 0, 1, height);
-  player.draw();
+  // --
+  context.strokeStyle = "#f26";
+  context.lineWidth = 20;
+  context.strokeRect(0, 0, width, height);
+  // context.strokeRect(wallWidth, wallWidth, width - 2 *wallWidth, height - 2 * wallWidth);
   for (i = 0; i < monsters.length; i++) {
     monsters[i].draw();
   };
   for (i = 0; i < currentLightPuzzle.length; i++) {
     currentLightPuzzle[i].draw();
   };
+  player.draw();
 };
 
+var drawDoors = function(doorArray) {
+  context.lineWidth = 1;
+  for (i = 0; i < doors.length; i ++) {
+    if (i % 2 === 0) {
+      // -- draw rectangles for doors. -- //
+    }
+  }
+}
 
 // -- A function to calculate the total distance between the centers of two sprites -- //
 var calculateDistance = function(spriteOne, spriteTwo) {
@@ -126,8 +156,6 @@ var monsterBump = function(monsterArray) {
   for (i = 0; i < monsterArray.length; i++) {
     for (index = 0; index < monsterArray.length; index++) {
       if (i != index && calculateDistance(monsterArray[index], monsterArray[i]) <= monsterArray[i].radius + monsterArray[index].radius) {
-        // console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
-        // console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
         monsterArray[i].xVel *= -1;
         monsterArray[i].yVel *= -1;
         monsterArray[index].xVel *= -1;
@@ -136,12 +164,24 @@ var monsterBump = function(monsterArray) {
         monsterArray[i].yPos += monsterArray[i].yVel;
         monsterArray[index].xPos += monsterArray[index].xVel;
         monsterArray[index].yPos += monsterArray[index].yVel;
-        // console.log("Pos=" + monsterArray[i].xPos + "," + monsterArray[i].yPos + " " + monsterArray[index].xPos + "," + monsterArray[index].yPos);
-        // console.log("Vel=" + monsterArray[i].xVel + "," + monsterArray[i].yVel + " " + monsterArray[index].xVel + "," + monsterArray[index].yVel);
       }
     };
   };
 };
+
+var collisionCheckLightPuzzle = function(triggeringSprite, lightPuzzleArray) {
+    for (var i = 0; i < lightPuzzleArray.length; i++) {
+      if (calculateDistance(lightPuzzleArray[i].sprite, triggeringSprite) <= (lightPuzzleArray[i].sprite.radius + triggeringSprite.radius) && !lightPuzzlePlayerBoolean) {
+        lightPuzzleArray[i].toggleLights();
+        triggeredLight = lightPuzzleArray[i].sprite;
+        lightPuzzlePlayerBoolean = true;
+      }
+    };
+  if (lightPuzzlePlayerBoolean === true && calculateDistance(triggeredLight, player) > triggeredLight.radius + triggeringSprite.radius + 10) {
+    lightPuzzlePlayerBoolean = false;
+  }
+};
+
 
 var collisionCheck = function(sprite, monsterArray) {
   for (i = 0; i < monsterArray.length; i++) {
@@ -159,7 +199,7 @@ function Sprite(xPos, yPos, radius, color = "red", xVel = 0, yVel = 0) {
   this.ballColor = color;
   this.xVel = xVel;
   this.yVel = yVel;
-}
+};
 
 // -- draws the sprite on the canvas -- //
 Sprite.prototype.draw = function () {
@@ -226,11 +266,12 @@ LightPuzzle.prototype.draw = function() {
   this.sprite.draw();
 };
 
+// -- This function will toggle all directly adjacent lights. -- //
 LightPuzzle.prototype.toggleLights = function() {
   this.isLit = !this.isLit;
   var workingColumn = this.column;
   var workingRow = this.row;
-  for( i = 0; i < currentLightPuzzle.length; i ++) {
+  for(var i = 0; i < currentLightPuzzle.length; i ++) {
       if (Math.abs((workingRow + workingColumn) - (currentLightPuzzle[i].row + currentLightPuzzle[i].column)) === 1 || Math.abs((workingRow + workingColumn) - (currentLightPuzzle[i].row + currentLightPuzzle[i].column)) === 10) {
         currentLightPuzzle[i].isLit = !currentLightPuzzle[i].isLit;
       }
@@ -242,38 +283,6 @@ window.onload = function() {
   document.body.appendChild(canvas);
   animate(step);
 };
-
-// -- Original movement idea is contained in the next 30 lines. -- //
-// window.addEventListener("keydown", function(event) {
-// // -- Event listener for up and down key. -- //
-//   if (event.keyCode === 38) {
-//     player.yVel = -playerSpeed;
-//   } else if (event.keyCode === 40) {
-//     player.yVel = playerSpeed;
-//   }
-//   if (event.keyCode === 37) {
-//     // -- Event listener for left and rigth key. -- //
-//     player.xVel = -playerSpeed;
-//   } else if (event.keyCode === 39) {
-//     player.xVel = playerSpeed;
-//   }
-//   console.log(event.keyCode);
-//   console.log("time = " + time);
-// });
-// // -- keyup press is designed to stop movement if the key for the direction you are moving is released. We can adjust that behavior towards whatever we want. -- //
-// window.addEventListener("keyup", function (event) {
-//   if (event.keyCode === 39 && player.xVel === playerSpeed) {
-//     player.xVel = 0;
-//   } else if (event.keyCode === 37 && player.xVel === -playerSpeed) {
-//     player.xVel = 0;
-//   }
-//   if (event.keyCode === 38 && player.yVel === -playerSpeed) {
-//     player.yVel = 0;
-//   } else if (event.keyCode === 40 && player.yVel === playerSpeed) {
-//     player.yVel = 0;
-//   }
-// });
-
 
 // -- Optional movement key code to work better while pushing opposite directions -- //
 window.addEventListener("keydown", function(event) {
@@ -290,8 +299,8 @@ window.addEventListener("keydown", function(event) {
       depressedKeys.push(40);
     }
   }
+  // -- Event listener for left and rigth key. -- //
   if (event.keyCode === 37) {
-    // -- Event listener for left and rigth key. -- //
     player.xVel = -playerSpeed;
     if (!depressedKeys.includes(37)) {
       depressedKeys.push(37);
@@ -303,9 +312,6 @@ window.addEventListener("keydown", function(event) {
       depressedKeys.push(39);
     }
   }
-  console.log("At end of keydown:" + depressedKeys);
-  // console.log(event.keyCode);
-  // console.log("time = " + time);
 });
 // -- keyup press is designed to stop movement if the key for the direction you are moving is released. We can adjust that behavior towards whatever we want. -- //
 window.addEventListener("keyup", function (event) {
@@ -342,46 +348,3 @@ window.addEventListener("keyup", function (event) {
   };
   console.log("At end of keyup:" + depressedKeys);
 });
-
-// -- this is an example of an object and prototypes that I used for pong. It is left in here as an example of how to construct a basic moving object that reflects off of objects. -- //
-
-// function Ball(xPos, yPos) {
-//   this.xPos = xPos;
-//   this.yPos = yPos;
-//   this.xVel = 3;
-//   this.yVel = 6;
-//   this.radius = ballRadius;
-// };
-//
-//
-// Ball.prototype.draw = function () {
-//   context.beginPath();
-//   context.arc(this.xPos, this.yPos, this.radius, 2 * Math.PI, false);
-//   context.fillStyle = "#fff";
-//   context.fill();
-// };
-//
-// Ball.prototype.update =function() {
-//   this.xPos += this.xVel;
-//   this.yPos += this.yVel;
-//   if (this.xPos + this.radius>= width - paddleWidth) {
-//     if (this.yPos > paddleTwo.yPos && this.yPos < paddleTwo.yPos + paddleHeight) {
-//       this.xVel *= -1;
-//     } else {
-//       ball.xPos = 250;
-//       ball.yPos = 250;
-//     }
-//   } else if (this.xPos - this.radius<= paddleWidth) {
-//       if (this.yPos > paddleOne.yPos && this.yPos < paddleOne.yPos + paddleHeight) {
-//         this.xVel *= -1;
-//       } else {
-//         ball.xPos = 750;
-//         ball.yPos = 250;
-//       }
-//     }
-//   if (this.yPos + this.radius>= height) {
-//     this.yVel *= -1;
-//   } else if (this.yPos - this.radius<= 0) {
-//     this.yVel *= -1;
-//   }
-// };
